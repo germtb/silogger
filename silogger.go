@@ -6,22 +6,29 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/germtb/sidb"
-	"github.com/google/uuid"
 )
 
-type Logger struct {
-	db    *sidb.Database
-	level LogLevel
+type LogEntry struct {
+	Level   string
+	Message string
 }
 
-func InitLogger(db *sidb.Database) *Logger {
+type Storage interface {
+	Store(entry LogEntry) error
+}
+
+type Logger struct {
+	storage Storage
+	level   LogLevel
+}
+
+func InitLogger(storage Storage) *Logger {
 	log.SetFlags(0) // Disable default timestamp logging
 	color.NoColor = false
 
 	return &Logger{
-		db:    db,
-		level: INFO,
+		storage: storage,
+		level:   INFO,
 	}
 }
 
@@ -52,12 +59,8 @@ func (logger *Logger) Debug(args ...any) {
 
 	message := fmt.Sprint(args...)
 
-	if logger.db != nil {
-		go logger.db.Upsert(sidb.EntryInput{
-			Key:   uuid.NewString(),
-			Value: []byte(message),
-			Type:  "debug",
-		})
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "debug", Message: message})
 	}
 
 	logger.logWithLevel("DEBUG", debugColor, message)
@@ -70,12 +73,8 @@ func (logger *Logger) Info(args ...any) {
 
 	message := fmt.Sprint(args...)
 
-	if logger.db != nil {
-		go logger.db.Upsert(sidb.EntryInput{
-			Key:   uuid.NewString(),
-			Value: []byte(message),
-			Type:  "info",
-		})
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "info", Message: message})
 	}
 
 	logger.logWithLevel("INFO", infoColor, message)
@@ -88,12 +87,8 @@ func (logger *Logger) Warn(args ...any) {
 
 	message := fmt.Sprint(args...)
 
-	if logger.db != nil {
-		go logger.db.Upsert(sidb.EntryInput{
-			Key:   uuid.NewString(),
-			Value: []byte(message),
-			Type:  "warn",
-		})
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "warn", Message: message})
 	}
 
 	logger.logWithLevel("WARN", warnColor, message)
@@ -106,12 +101,8 @@ func (logger *Logger) Error(args ...any) {
 
 	message := fmt.Sprint(args...)
 
-	if logger.db != nil {
-		go logger.db.Upsert(sidb.EntryInput{
-			Key:   uuid.NewString(),
-			Value: []byte(message),
-			Type:  "error",
-		})
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "error", Message: message})
 	}
 
 	logger.logWithLevel("ERROR", errorColor, message)
@@ -124,12 +115,8 @@ func (logger *Logger) Fatal(args ...any) {
 
 	message := fmt.Sprint(args...)
 
-	if logger.db != nil {
-		go logger.db.Upsert(sidb.EntryInput{
-			Key:   uuid.NewString(),
-			Value: []byte(message),
-			Type:  "fatal",
-		})
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "fatal", Message: message})
 	}
 
 	logger.logWithLevel("FATAL", fatalColor, message)
@@ -143,8 +130,8 @@ func (logger *Logger) GetLevel() LogLevel {
 	return logger.level
 }
 
-func (logger *Logger) SetDatabase(db *sidb.Database) {
-	logger.db = db
+func (logger *Logger) SetStorage(storage Storage) {
+	logger.storage = storage
 }
 
 func (logger *Logger) logWithLevel(level string, colorFunc func(a ...any) string, message string) {
