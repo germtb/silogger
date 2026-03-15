@@ -3,6 +3,7 @@ package silogger
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -66,12 +67,68 @@ func (logger *Logger) Debug(args ...any) {
 	logger.logWithLevel("DEBUG", debugColor, message)
 }
 
+func (logger *Logger) Debugf(format string, args ...any) {
+	if logger.level > DEBUG {
+		return
+	}
+
+	message := fmt.Sprintf(format, args...)
+
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "debug", Message: message})
+	}
+
+	logger.logWithLevel("DEBUG", debugColor, message)
+}
+
+func (logger *Logger) Debugln(args ...any) {
+	if logger.level > DEBUG {
+		return
+	}
+
+	message := strings.TrimRight(fmt.Sprintln(args...), "\n")
+
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "debug", Message: message})
+	}
+
+	logger.logWithLevel("DEBUG", debugColor, message)
+}
+
 func (logger *Logger) Info(args ...any) {
 	if logger.level > INFO {
 		return
 	}
 
 	message := fmt.Sprint(args...)
+
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "info", Message: message})
+	}
+
+	logger.logWithLevel("INFO", infoColor, message)
+}
+
+func (logger *Logger) Infof(format string, args ...any) {
+	if logger.level > INFO {
+		return
+	}
+
+	message := fmt.Sprintf(format, args...)
+
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "info", Message: message})
+	}
+
+	logger.logWithLevel("INFO", infoColor, message)
+}
+
+func (logger *Logger) Infoln(args ...any) {
+	if logger.level > INFO {
+		return
+	}
+
+	message := strings.TrimRight(fmt.Sprintln(args...), "\n")
 
 	if logger.storage != nil {
 		go logger.storage.Store(LogEntry{Level: "info", Message: message})
@@ -94,6 +151,34 @@ func (logger *Logger) Warn(args ...any) {
 	logger.logWithLevel("WARN", warnColor, message)
 }
 
+func (logger *Logger) Warnf(format string, args ...any) {
+	if logger.level > WARN {
+		return
+	}
+
+	message := fmt.Sprintf(format, args...)
+
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "warn", Message: message})
+	}
+
+	logger.logWithLevel("WARN", warnColor, message)
+}
+
+func (logger *Logger) Warnln(args ...any) {
+	if logger.level > WARN {
+		return
+	}
+
+	message := strings.TrimRight(fmt.Sprintln(args...), "\n")
+
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "warn", Message: message})
+	}
+
+	logger.logWithLevel("WARN", warnColor, message)
+}
+
 func (logger *Logger) Error(args ...any) {
 	if logger.level > ERROR {
 		return
@@ -108,12 +193,68 @@ func (logger *Logger) Error(args ...any) {
 	logger.logWithLevel("ERROR", errorColor, message)
 }
 
+func (logger *Logger) Errorf(format string, args ...any) {
+	if logger.level > ERROR {
+		return
+	}
+
+	message := fmt.Sprintf(format, args...)
+
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "error", Message: message})
+	}
+
+	logger.logWithLevel("ERROR", errorColor, message)
+}
+
+func (logger *Logger) Errorln(args ...any) {
+	if logger.level > ERROR {
+		return
+	}
+
+	message := strings.TrimRight(fmt.Sprintln(args...), "\n")
+
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "error", Message: message})
+	}
+
+	logger.logWithLevel("ERROR", errorColor, message)
+}
+
 func (logger *Logger) Fatal(args ...any) {
 	if logger.level > FATAL {
 		return
 	}
 
 	message := fmt.Sprint(args...)
+
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "fatal", Message: message})
+	}
+
+	logger.logWithLevel("FATAL", fatalColor, message)
+}
+
+func (logger *Logger) Fatalf(format string, args ...any) {
+	if logger.level > FATAL {
+		return
+	}
+
+	message := fmt.Sprintf(format, args...)
+
+	if logger.storage != nil {
+		go logger.storage.Store(LogEntry{Level: "fatal", Message: message})
+	}
+
+	logger.logWithLevel("FATAL", fatalColor, message)
+}
+
+func (logger *Logger) Fatalln(args ...any) {
+	if logger.level > FATAL {
+		return
+	}
+
+	message := strings.TrimRight(fmt.Sprintln(args...), "\n")
 
 	if logger.storage != nil {
 		go logger.storage.Store(LogEntry{Level: "fatal", Message: message})
